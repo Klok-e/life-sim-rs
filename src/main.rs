@@ -1,7 +1,9 @@
+mod creature;
 mod fly_camera;
 
 use bevy::{core::Zeroable, prelude::*};
 use bevy_rapier2d::prelude::*;
+use creature::{move_creature_system, Creature};
 use fly_camera::{camera_2d_movement_system, FlyCamera2d};
 use rand::Rng;
 
@@ -13,14 +15,15 @@ fn main() {
             ..default()
         })
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        // .add_plugin(RapierDebugRenderPlugin::default())
+        .add_plugin(RapierDebugRenderPlugin::default())
         .add_startup_system(setup_things_startup)
         .add_system(camera_2d_movement_system)
         .add_system(spawn_food_system)
+        .add_system(move_creature_system)
         .run();
 }
 
-fn setup_things_startup(mut commands: Commands) {
+fn setup_things_startup(mut commands: Commands, images: Res<AssetServer>) {
     commands
         .spawn_bundle(Camera2dBundle::default())
         .insert(FlyCamera2d::default());
@@ -30,7 +33,19 @@ fn setup_things_startup(mut commands: Commands) {
         height: 1000.,
         food_amount: 100,
         food_timeout: 2.,
-    })
+    });
+
+    commands
+        .spawn()
+        .insert(RigidBody::Dynamic)
+        .insert(Collider::ball(12.))
+        .insert(Restitution::coefficient(0.7))
+        .insert(Velocity::default())
+        .insert(Creature {})
+        .insert_bundle(SpriteBundle {
+            texture: images.load("food_sprite.png"),
+            ..default()
+        });
 }
 
 fn spawn_food_system(
@@ -57,7 +72,7 @@ fn spawn_food_system(
                 ..default()
             })
             .insert(RigidBody::Dynamic)
-            .insert(Collider::ball(1.))
+            .insert(Collider::ball(12.))
             .insert(Restitution::coefficient(0.7));
     }
 
