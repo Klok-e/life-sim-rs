@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 bevy = { version = "0.8", features = ["dynamic"] }
 rand = "0.8"
+bevy_rapier2d = "0.16"
 
 [profile.dev]
 opt-level = 1
