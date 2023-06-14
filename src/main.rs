@@ -25,7 +25,7 @@ fn main() {
 
 fn setup_things_startup(mut commands: Commands, images: Res<AssetServer>) {
     commands
-        .spawn_bundle(Camera2dBundle::default())
+        .spawn(Camera2dBundle::default())
         .insert(FlyCamera2d::default());
 
     commands.insert_resource(GameSettings {
@@ -36,13 +36,14 @@ fn setup_things_startup(mut commands: Commands, images: Res<AssetServer>) {
     });
 
     commands
-        .spawn()
-        .insert(RigidBody::Dynamic)
-        .insert(Collider::ball(12.))
-        .insert(Restitution::coefficient(0.7))
-        .insert(Velocity::default())
-        .insert(Creature {})
-        .insert_bundle(SpriteBundle {
+        .spawn((
+            RigidBody::Dynamic,
+            Collider::ball(12.),
+            Restitution::coefficient(0.7),
+            Velocity::default(),
+            Creature {},
+        ))
+        .insert(SpriteBundle {
             texture: images.load("food_sprite.png"),
             ..default()
         });
@@ -62,11 +63,10 @@ fn spawn_food_system(
         let x = rng.gen_range(-settings.width..settings.width);
         let y = rng.gen_range(-settings.height..settings.height);
         commands
-            .spawn()
-            .insert(Food {
-                spawned: Timer::from_seconds(settings.food_timeout, false),
+            .spawn(Food {
+                spawned: Timer::from_seconds(settings.food_timeout, TimerMode::Once),
             })
-            .insert_bundle(SpriteBundle {
+            .insert(SpriteBundle {
                 texture: images.load("food_sprite.png"),
                 transform: Transform::from_translation(Vec3::new(x, y, 0.)),
                 ..default()
@@ -93,6 +93,7 @@ pub struct Food {
     pub spawned: Timer,
 }
 
+#[derive(Debug, Resource)]
 pub struct GameSettings {
     pub width: f32,
     pub height: f32,
